@@ -33,16 +33,16 @@ export default async function handler(req: any, res: any) {
       if (!referenceResponse.ok) return res.status(500).json({ error: `Referência do Lula não encontrada: ${reference.url}` });
       const personBuffer = Buffer.from(await dataUrlToBlob(body.image).arrayBuffer());
       const lulaBuffer = Buffer.from(await referenceResponse.arrayBuffer());
-      const personLayer = await sharp(personBuffer).resize(1024, 1536, { fit: 'cover' }).png().toBuffer();
-      const lulaLayer = await sharp(lulaBuffer).resize(560, 840, { fit: 'cover' }).png().toBuffer();
-      const combinedInput = await sharp({ create: { width: 1024, height: 1536, channels: 3, background: '#74151d' } }).composite([
-        { input: personLayer, left: 0, top: 0 },
-        { input: lulaLayer, left: 464, top: 180 },
+      const personLayer = await sharp(personBuffer).resize(500, 1200, { fit: 'cover' }).png().toBuffer();
+      const lulaLayer = await sharp(lulaBuffer).resize(500, 1200, { fit: 'cover' }).png().toBuffer();
+      const combinedInput = await sharp({ create: { width: 1024, height: 1536, channels: 3, background: '#eadbd4' } }).composite([
+        { input: personLayer, left: 12, top: 168 },
+        { input: lulaLayer, left: 512, top: 168 },
       ]).png().toBuffer();
       const client = new InferenceClient(huggingFaceToken);
       const result = await client.imageToImage({
         model: 'Qwen/Qwen-Image-Edit', provider: 'fal-ai', inputs: new Blob([combinedInput], { type: 'image/png' }),
-        parameters: { prompt: `${body.prompt} Add the referenced Brazilian president Luiz Inácio Lula da Silva standing beside the person in the input and embracing them naturally.`, negative_prompt: body.negativo, target_size: { width: 1024, height: 1536 } },
+        parameters: { prompt: `${body.prompt} The input is a two-panel identity reference board. PERSON_A is the exact person from the LEFT panel and must remain the same person: preserve their face, identity, skin tone, hair, age, body and clothing; do not replace, redraw or invent PERSON_A. PERSON_B is Luiz Inácio Lula da Silva from the RIGHT panel; preserve his recognizable face and beard. Create one final unified scene with PERSON_A and PERSON_B standing together in a natural warm embrace, not a split-screen, not a collage, not two unrelated people.`, negative_prompt: `${body.negativo}, different person, substituted face, invented person A, altered identity, split screen, two panels, collage`, target_size: { width: 1024, height: 1536 } },
       });
       return res.status(200).json({ image: await blobToDataUrl(result) });
     }

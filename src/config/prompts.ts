@@ -7,7 +7,7 @@ export const PRESIDENT_REFERENCE_BANK = [
   { url: '/lula-reference-06.png', angulo: '3-4' },
 ] as const;
 
-export const BASE = `Two-person commemorative poster portrait, painterly editorial illustration with visible fine film grain and screen-print texture. Artistic tribute poster — deliberately stylized, NOT a photograph.
+export const BASE = `Two-person commemorative portrait, realistic editorial photograph with subtle fine film grain and a refined tribute-poster finish. This is a fictional commemorative image, not a news photograph or documentary record.
 
 SUBJECTS — two people standing side by side, same ground plane:
 - PERSON_A: from reference image 1. Preserve facial identity exactly — face shape, skin tone, hair, facial hair, glasses, apparent age, body build. Do not idealize, slim, whiten, rejuvenate or beautify. Keep natural skin texture.

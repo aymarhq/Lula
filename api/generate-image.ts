@@ -33,16 +33,16 @@ export default async function handler(req: any, res: any) {
       if (!referenceResponse.ok) return res.status(500).json({ error: `Referência do Lula não encontrada: ${reference.url}` });
       const personBuffer = Buffer.from(await dataUrlToBlob(body.image).arrayBuffer());
       const lulaBuffer = Buffer.from(await referenceResponse.arrayBuffer());
-      const personLayer = await sharp(personBuffer).resize(500, 1200, { fit: 'cover' }).png().toBuffer();
-      const lulaLayer = await sharp(lulaBuffer).resize(500, 1200, { fit: 'cover' }).png().toBuffer();
+      const personLayer = await sharp(personBuffer).resize(760, 1200, { fit: 'cover' }).png().toBuffer();
+      const lulaLayer = await sharp(lulaBuffer).resize(600, 1000, { fit: 'cover' }).png().toBuffer();
       const combinedInput = await sharp({ create: { width: 1024, height: 1536, channels: 3, background: '#eadbd4' } }).composite([
-        { input: personLayer, left: 12, top: 168 },
-        { input: lulaLayer, left: 512, top: 168 },
+        { input: personLayer, left: 40, top: 168 },
+        { input: lulaLayer, left: 410, top: 250 },
       ]).png().toBuffer();
       const client = new InferenceClient(huggingFaceToken);
       const result = await client.imageToImage({
         model: 'Qwen/Qwen-Image-Edit', provider: 'fal-ai', inputs: new Blob([combinedInput], { type: 'image/png' }),
-        parameters: { prompt: `${body.prompt} The input is a two-panel identity reference board. PERSON_A is the exact person from the LEFT panel and must remain the same person: preserve their face, identity, skin tone, hair, age, body and clothing; do not replace, redraw or invent PERSON_A. PERSON_B is Luiz Inácio Lula da Silva from the RIGHT panel; preserve his recognizable face and beard. Create one final unified scene with PERSON_A and PERSON_B standing together in a natural warm embrace, not a split-screen, not a collage, not two unrelated people.`, negative_prompt: `${body.negativo}, different person, substituted face, invented person A, altered identity, split screen, two panels, collage`, target_size: { width: 1024, height: 1536 } },
+        parameters: { prompt: `${body.prompt} The input contains identity references only; do not copy its arrangement, borders or layout. PERSON_A is the exact uploaded person and must remain the same person: preserve their face, identity, skin tone, hair, age, body and clothing; do not replace, redraw or invent PERSON_A. PERSON_B is Luiz Inácio Lula da Silva; preserve his recognizable face and beard from the reference. Create one believable unified photographic scene from scratch: both people share the same space, stand close together and embrace naturally with connected arms and shoulders. The final result must look like one special candid photograph, with one background, one camera perspective, one light source and natural contact shadows.`, negative_prompt: `${body.negativo}, different person, substituted face, invented person A, altered identity, split screen, vertical divider, two panels, reference board, collage, side-by-side portrait, diptych`, target_size: { width: 1024, height: 1536 } },
       });
       return res.status(200).json({ image: await blobToDataUrl(result) });
     }

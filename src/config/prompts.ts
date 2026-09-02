@@ -1,10 +1,19 @@
+export const PRESIDENT_REFERENCE_BANK = [
+  { url: '/lula-reference-01.jpg', angulo: 'frontal' },
+  { url: '/lula-reference-02.jpg', angulo: '3-4' },
+  { url: '/lula-reference-03.jpg', angulo: 'frontal' },
+  { url: '/lula-reference-04.jpg', angulo: '3-4' },
+  { url: '/lula-reference-05.jpg', angulo: 'frontal' },
+  { url: '/lula-reference-06.jpg', angulo: '3-4' },
+] as const;
+
 export const BASE = `Two-person commemorative poster portrait, painterly editorial illustration with visible fine film grain and screen-print texture. Artistic tribute poster — deliberately stylized, NOT a photograph.
 
 SUBJECTS — two people standing side by side, same ground plane:
 - PERSON_A: from reference image 1. Preserve facial identity exactly — face shape, skin tone, hair, facial hair, glasses, apparent age, body build. Do not idealize, slim, whiten, rejuvenate or beautify. Keep natural skin texture.
 - PERSON_B: from reference image 2. Preserve facial identity exactly — face shape, skin tone, hair, beard, apparent age. Elderly man, white hair, white beard.
 
-INTERACTION — warm, respectful, plausible: standing shoulder to shoulder, both turned slightly toward camera, relaxed posture. Optional single natural contact point: a handshake, or a hand resting on the shoulder. Both looking toward the viewer with a calm, genuine smile. No hugging faces together, no kissing, no lifting, no theatrical gestures.
+INTERACTION — warm, respectful, plausible embrace: the two people stand close together and hug naturally, with one arm around the other's shoulder or upper back. Their bodies share the same ground plane and their shoulders and arms connect naturally. Both turned slightly toward camera, relaxed posture, calm genuine smiles. No kissing, no faces pressed together, no lifting, no theatrical gestures.
 
 PHYSICAL COHERENCE — one single dominant light source for both people, identical lens rendering and depth of field, matching perspective and camera height, consistent scale, grounded contact shadows on the same floor, no cut-out edges, halo or seam, unified color grading.
 

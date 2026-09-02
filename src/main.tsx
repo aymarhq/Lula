@@ -2,9 +2,9 @@ import React, { useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { motion } from 'framer-motion';
 import './styles.css';
-import { idsDaInterface, montarPrompt } from './config/prompts';
+import { idsDaInterface, montarPrompt, PRESIDENT_REFERENCE_BANK } from './config/prompts';
 
-type ImageGenerationRequest = { image: string; scenario: string; seal: string; dedication: string };
+type ImageGenerationRequest = { image: string; scenario: string; seal: string; dedication: string; presidentReferences: readonly { url: string; angulo: string }[] };
 
 function fileToDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = reject; reader.readAsDataURL(file); });
@@ -54,7 +54,7 @@ function App() {
   const displayPrice = (price / 100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   const fakePoster = useMemo(() => generatedSrc || src || '', [generatedSrc, src]);
   function choose(f?: File) { setError(''); if (!f) return; if (!['image/jpeg','image/png','image/webp'].includes(f.type)) return setError('Esse formato não rola aqui. Manda em JPG, PNG ou WEBP.'); if (f.size > 10*1024*1024) return setError('Essa imagem passou de 10 MB. Escolha uma mais leve.'); setFile(f); setSrc(URL.createObjectURL(f)); }
-  async function generate() { if (!file || !consent) return; setError(''); setStep('generating'); const startedAt = Date.now(); try { const userImage = await fileToDataUrl(file); const { cenarioId, seloId } = idsDaInterface(scenario, seal); const prompt = montarPrompt(cenarioId, seloId); const image = await generateWithCodex({ image: userImage, scenario, seal, dedication, ...prompt, promptId: prompt.id }); setGeneratedSrc(image || await createDemoComposition(userImage)); await new Promise(resolve => setTimeout(resolve, Math.max(0, 1800 - (Date.now() - startedAt)))); setStep('preview'); } catch (generationError) { setStep('home'); setError(generationError instanceof Error ? generationError.message : 'Não foi possível gerar a imagem.'); } }
+  async function generate() { if (!file || !consent) return; setError(''); setStep('generating'); const startedAt = Date.now(); try { const userImage = await fileToDataUrl(file); const { cenarioId, seloId } = idsDaInterface(scenario, seal); const prompt = montarPrompt(cenarioId, seloId); const presidentReferences = PRESIDENT_REFERENCE_BANK.filter(reference => reference.angulo === prompt.anguloRef); const image = await generateWithCodex({ image: userImage, scenario, seal, dedication, presidentReferences, ...prompt, promptId: prompt.id }); setGeneratedSrc(image || await createDemoComposition(userImage)); await new Promise(resolve => setTimeout(resolve, Math.max(0, 1800 - (Date.now() - startedAt)))); setStep('preview'); } catch (generationError) { setStep('home'); setError(generationError instanceof Error ? generationError.message : 'Não foi possível gerar a imagem.'); } }
   function reset() { setStep('home'); setFile(null); setSrc(''); setGeneratedSrc(''); setConsent(false); setDedication(''); }
   function goCheckout() { setStep('checkout'); }
   return <div className="app">

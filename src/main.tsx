@@ -25,8 +25,7 @@ async function createDemoComposition(userSrc: string) {
 }
 
 async function generateWithCodex(request: ImageGenerationRequest & { promptId: string; prompt: string; negativo: string; anguloRef: string; acento: string; svgSelo: string }) {
-  const endpoint = import.meta.env.VITE_IMAGE_GENERATION_URL as string | undefined;
-  if (!endpoint) return null;
+  const endpoint = (import.meta.env.VITE_IMAGE_GENERATION_URL as string | undefined) || '/api/generate-image';
   const response = await fetch(endpoint, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
@@ -54,7 +53,7 @@ function App() {
   const displayPrice = (price / 100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   const fakePoster = useMemo(() => generatedSrc || src || '', [generatedSrc, src]);
   function choose(f?: File) { setError(''); if (!f) return; if (!['image/jpeg','image/png','image/webp'].includes(f.type)) return setError('Esse formato não rola aqui. Manda em JPG, PNG ou WEBP.'); if (f.size > 10*1024*1024) return setError('Essa imagem passou de 10 MB. Escolha uma mais leve.'); setFile(f); setSrc(URL.createObjectURL(f)); }
-  async function generate() { if (!file || !consent) return; setError(''); setStep('generating'); const startedAt = Date.now(); try { const userImage = await fileToDataUrl(file); const { cenarioId, seloId } = idsDaInterface(scenario, seal); const prompt = montarPrompt(cenarioId, seloId); const presidentReferences = PRESIDENT_REFERENCE_BANK.filter(reference => reference.angulo === prompt.anguloRef); const image = await generateWithCodex({ image: userImage, scenario, seal, dedication, presidentReferences, ...prompt, promptId: prompt.id }); setGeneratedSrc(image || await createDemoComposition(userImage)); await new Promise(resolve => setTimeout(resolve, Math.max(0, 1800 - (Date.now() - startedAt)))); setStep('preview'); } catch (generationError) { setStep('home'); setError(generationError instanceof Error ? generationError.message : 'Não foi possível gerar a imagem.'); } }
+  async function generate() { if (!file || !consent) return; setError(''); setStep('generating'); const startedAt = Date.now(); try { const userImage = await fileToDataUrl(file); const { cenarioId, seloId } = idsDaInterface(scenario, seal); const prompt = montarPrompt(cenarioId, seloId); const presidentReferences = PRESIDENT_REFERENCE_BANK.filter(reference => reference.angulo === prompt.anguloRef); const image = await generateWithCodex({ image: userImage, scenario, seal, dedication, presidentReferences, ...prompt, promptId: prompt.id }); if (!image) throw new Error('O gerador não retornou uma imagem.'); setGeneratedSrc(image); await new Promise(resolve => setTimeout(resolve, Math.max(0, 1800 - (Date.now() - startedAt)))); setStep('preview'); } catch (generationError) { setStep('home'); setError(generationError instanceof Error ? generationError.message : 'Não foi possível gerar a imagem.'); } }
   function reset() { setStep('home'); setFile(null); setSrc(''); setGeneratedSrc(''); setConsent(false); setDedication(''); }
   function goCheckout() { setStep('checkout'); }
   return <div className="app">
@@ -74,7 +73,7 @@ function App() {
       <section className="options"><h2>Deixe a homenagem com a sua cara</h2><p>Escolha um cenário e escreva um recado para entrar no seu pôster.</p><div className="option-grid"><div><label>Cenário da homenagem</label><select value={scenario} onChange={e=>setScenario(e.target.value)}>{scenarios.map(s=><option key={s}>{s}</option>)}</select></div><div><label>Selo de carinho</label><select value={seal} onChange={e=>setSeal(e.target.value)}>{seals.map(s=><option key={s}>{s}</option>)}</select></div><div className="full"><label>Escreva um recado pra ele <small>{dedication.length}/90</small></label><input maxLength={90} value={dedication} onChange={e=>setDedication(e.target.value)} placeholder="Obrigado por tudo, presidente."/></div></div></section>
       <section className="steps"><h2>Como funciona</h2><div className="step-grid">{[['1','Envie sua foto','Uma foto sua, de frente, com o rosto visível.'],['2','Gere sua montagem','Nossa IA cria sua homenagem em pôster.'],['3','Desbloqueie a versão final','Por R$ 9,90, receba o arquivo em alta resolução.']].map(([n,t,d])=><div className="step" key={n}><b>{n}</b><h3>{t}</h3><p>{d}</p></div>)}</div></section>
     </main>}
-    {step === 'generating' && <Loading connected={Boolean(import.meta.env.VITE_IMAGE_GENERATION_URL)}/>} 
+    {step === 'generating' && <Loading connected/>} 
     {(step === 'preview' || step === 'checkout' || step === 'paid') && <main className="flow"><button className="back" onClick={()=>setStep(step==='checkout'?'preview':'home')}>← Voltar</button>{step === 'preview' && <Preview poster={fakePoster} scenario={scenario} seal={seal} dedication={dedication} onCheckout={goCheckout} onReset={reset}/>} {step === 'checkout' && <Checkout poster={fakePoster} displayPrice={displayPrice} more={more} setMore={setMore} customValue={customValue} setCustomValue={setCustomValue} onPaid={()=>setStep('paid')}/>} {step === 'paid' && <Paid poster={fakePoster} onReset={reset}/>}</main>}
     <footer><span>© 2026 Eu e o Presidente</span><span>Política de Privacidade · Termos de Uso · Como usamos IA · Excluir minha foto</span><p>Este site é independente e não possui vínculo com o presidente, governo, partido, campanha ou órgão público. Todas as imagens são fictícias e criadas por IA.</p></footer>
   </div>

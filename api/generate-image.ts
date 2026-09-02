@@ -1,6 +1,7 @@
 declare const process: { env: Record<string, string | undefined> };
 declare const Buffer: any;
 import { InferenceClient } from '@huggingface/inference';
+import sharp from 'sharp';
 
 type Reference = { url: string; angulo: string };
 
@@ -28,9 +29,19 @@ export default async function handler(req: any, res: any) {
     if (huggingFaceToken) {
       const reference = body.presidentReferences?.[0];
       if (!reference) return res.status(400).json({ error: 'Nenhuma referência do Lula foi selecionada.' });
+      const referenceResponse = await fetch(new URL(reference.url, origin));
+      if (!referenceResponse.ok) return res.status(500).json({ error: `Referência do Lula não encontrada: ${reference.url}` });
+      const personBuffer = Buffer.from(await dataUrlToBlob(body.image).arrayBuffer());
+      const lulaBuffer = Buffer.from(await referenceResponse.arrayBuffer());
+      const personLayer = await sharp(personBuffer).resize(1024, 1536, { fit: 'cover' }).png().toBuffer();
+      const lulaLayer = await sharp(lulaBuffer).resize(560, 840, { fit: 'cover' }).png().toBuffer();
+      const combinedInput = await sharp({ create: { width: 1024, height: 1536, channels: 3, background: '#74151d' } }).composite([
+        { input: personLayer, left: 0, top: 0 },
+        { input: lulaLayer, left: 464, top: 180 },
+      ]).png().toBuffer();
       const client = new InferenceClient(huggingFaceToken);
       const result = await client.imageToImage({
-        model: 'Qwen/Qwen-Image-Edit', provider: 'fal-ai', inputs: dataUrlToBlob(body.image),
+        model: 'Qwen/Qwen-Image-Edit', provider: 'fal-ai', inputs: new Blob([combinedInput], { type: 'image/png' }),
         parameters: { prompt: `${body.prompt} Add the referenced Brazilian president Luiz Inácio Lula da Silva standing beside the person in the input and embracing them naturally.`, negative_prompt: body.negativo, target_size: { width: 1024, height: 1536 } },
       });
       return res.status(200).json({ image: await blobToDataUrl(result) });

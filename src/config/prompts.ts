@@ -1,10 +1,10 @@
 export const PRESIDENT_REFERENCE_BANK = [
-  { url: '/lula-reference-01.jpg', angulo: 'frontal' },
-  { url: '/lula-reference-02.jpg', angulo: '3-4' },
-  { url: '/lula-reference-03.jpg', angulo: 'frontal' },
-  { url: '/lula-reference-04.jpg', angulo: '3-4' },
-  { url: '/lula-reference-05.jpg', angulo: 'frontal' },
-  { url: '/lula-reference-06.jpg', angulo: '3-4' },
+  { url: '/lula-reference-01.png', angulo: 'frontal' },
+  { url: '/lula-reference-02.png', angulo: '3-4' },
+  { url: '/lula-reference-03.png', angulo: 'frontal' },
+  { url: '/lula-reference-04.png', angulo: '3-4' },
+  { url: '/lula-reference-05.png', angulo: 'frontal' },
+  { url: '/lula-reference-06.png', angulo: '3-4' },
 ] as const;
 
 export const BASE = `Two-person commemorative poster portrait, painterly editorial illustration with visible fine film grain and screen-print texture. Artistic tribute poster — deliberately stylized, NOT a photograph.

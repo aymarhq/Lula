@@ -10,6 +10,20 @@ function fileToDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = reject; reader.readAsDataURL(file); });
 }
 
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => { const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = src; });
+}
+
+async function createDemoComposition(userSrc: string) {
+  const canvas = document.createElement('canvas'); canvas.width = 1000; canvas.height = 1250;
+  const context = canvas.getContext('2d')!;
+  const gradient = context.createLinearGradient(0, 0, 1000, 1250); gradient.addColorStop(0, '#651018'); gradient.addColorStop(.55, '#b64031'); gradient.addColorStop(1, '#ec9a62'); context.fillStyle = gradient; context.fillRect(0, 0, 1000, 1250);
+  try { const user = await loadImage(userSrc); context.save(); context.beginPath(); context.rect(55, 45, 890, 1050); context.clip(); context.globalAlpha = .94; context.drawImage(user, 55, 45, 890, 1050); context.restore(); } catch { /* mantém o fundo de demonstração */ }
+  try { const lula = await loadImage('/lula-reference.jpg'); context.save(); context.globalAlpha = .82; context.globalCompositeOperation = 'multiply'; context.drawImage(lula, 455, 215, 485, 820); context.restore(); } catch { context.fillStyle = '#fff'; context.font = '800 116px Barlow Condensed, sans-serif'; context.fillText('LULA', 620, 880); }
+  const overlay = context.createLinearGradient(0, 0, 1000, 0); overlay.addColorStop(0, 'rgba(70,0,0,.2)'); overlay.addColorStop(1, 'rgba(90,0,0,.48)'); context.fillStyle = overlay; context.fillRect(0, 0, 1000, 1100);
+  context.fillStyle = '#191919'; context.fillRect(0, 1100, 1000, 150); context.fillStyle = '#f2b1a9'; context.font = '700 28px Nunito Sans, sans-serif'; context.fillText('HOMENAGEM POPULAR', 42, 1145); context.fillStyle = '#fff'; context.font = '800 42px Barlow Condensed, sans-serif'; context.fillText('Uma homenagem para guardar', 42, 1200); return canvas.toDataURL('image/jpeg', .9);
+}
+
 async function generateWithCodex(request: ImageGenerationRequest & { promptId: string; prompt: string; negativo: string; anguloRef: string; acento: string; svgSelo: string }) {
   const endpoint = import.meta.env.VITE_IMAGE_GENERATION_URL as string | undefined;
   if (!endpoint) return null;
@@ -40,7 +54,7 @@ function App() {
   const displayPrice = (price / 100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   const fakePoster = useMemo(() => generatedSrc || src || '', [generatedSrc, src]);
   function choose(f?: File) { setError(''); if (!f) return; if (!['image/jpeg','image/png','image/webp'].includes(f.type)) return setError('Esse formato não rola aqui. Manda em JPG, PNG ou WEBP.'); if (f.size > 10*1024*1024) return setError('Essa imagem passou de 10 MB. Escolha uma mais leve.'); setFile(f); setSrc(URL.createObjectURL(f)); }
-  async function generate() { if (!file || !consent) return; setError(''); setStep('generating'); try { const { cenarioId, seloId } = idsDaInterface(scenario, seal); const prompt = montarPrompt(cenarioId, seloId); const image = await generateWithCodex({ image: await fileToDataUrl(file), scenario, seal, dedication, ...prompt, promptId: prompt.id }); if (image) setGeneratedSrc(image); else await new Promise(resolve => setTimeout(resolve, 1800)); setStep('preview'); } catch (generationError) { setStep('home'); setError(generationError instanceof Error ? generationError.message : 'Não foi possível gerar a imagem.'); } }
+  async function generate() { if (!file || !consent) return; setError(''); setStep('generating'); const startedAt = Date.now(); try { const userImage = await fileToDataUrl(file); const { cenarioId, seloId } = idsDaInterface(scenario, seal); const prompt = montarPrompt(cenarioId, seloId); const image = await generateWithCodex({ image: userImage, scenario, seal, dedication, ...prompt, promptId: prompt.id }); setGeneratedSrc(image || await createDemoComposition(userImage)); await new Promise(resolve => setTimeout(resolve, Math.max(0, 1800 - (Date.now() - startedAt)))); setStep('preview'); } catch (generationError) { setStep('home'); setError(generationError instanceof Error ? generationError.message : 'Não foi possível gerar a imagem.'); } }
   function reset() { setStep('home'); setFile(null); setSrc(''); setGeneratedSrc(''); setConsent(false); setDedication(''); }
   function goCheckout() { setStep('checkout'); }
   return <div className="app">

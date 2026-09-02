@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@huggingface/inference": "^4.13.28",
     "@vitejs/plugin-react": "latest",
     "framer-motion": "^13.1.1",
     "lucide-react": "^1.39.0",

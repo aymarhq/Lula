@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-O projeto inclui a rota real `api/generate-image.ts` para a Vercel. Configure `OPENAI_API_KEY` nas variáveis de ambiente da Vercel; opcionalmente, use `VITE_IMAGE_GENERATION_URL` para apontar para outro backend. A chave do modelo deve ficar somente no backend.
+O projeto inclui a rota real `api/generate-image.ts` para a Vercel. Configure `HUGGINGFACE_TOKEN` para testar com Qwen Image Edit (a rota prioriza esse provedor) ou `OPENAI_API_KEY` como fallback. A chave do modelo deve ficar somente no backend.
 
 O frontend envia `POST` JSON com `{ image, scenario, seal, dedication, promptId, prompt, negativo, anguloRef, acento, svgSelo, presidentReferences }`, onde `image` é um data URL e `presidentReferences` é o banco de fotos do Lula filtrado pelo ângulo do cenário. As referências atuais ficam em `public/` como `lula-reference-01.png` até `lula-reference-06.png`. O endpoint deve responder `{ "image": "data:image/png;base64,..." }` ou `{ "imageUrl": "https://..." }`. Assim o navegador nunca acessa diretamente a credencial do gerador.
 
